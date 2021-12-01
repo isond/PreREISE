@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pygrib
-from powersimdata.network.usa_tamu.constants.zones import id2abv
 from powersimdata.utility.distance import ll2uv
 from scipy.spatial import KDTree
 from tqdm import tqdm
@@ -68,7 +67,7 @@ def calculate_pout(wind_farms, start_dt, end_dt, directory):
     :meth:`prereise.gather.winddata.hrrr.hrrr.retrieve_data` with the same
     start_dt, end_dt, and directory.
 
-    :param pandas.DataFrame wind_farms: plant data frame.
+    :param pandas.DataFrame wind_farms: plant data frame, plus 'state_abv' column.
     :param str start_dt: start date.
     :param str end_dt: end date (inclusive).
     :param str directory: directory where hrrr data is contained.
@@ -78,15 +77,14 @@ def calculate_pout(wind_farms, start_dt, end_dt, directory):
             wind_farm1  wind_farm2
         dt1    POUT        POUT
         dt2    POUT        POUT
+    :raises ValueError: if ``wind_farms`` is missing the 'state_abv' column.
     """
 
-    wind_farm_ids = wind_farms.index
-    turbine_types = [
-        "Offshore"
-        if wind_farms.loc[i].type == "wind_offshore"
-        else id2abv[wind_farms.loc[i].zone_id]
-        for i in wind_farm_ids
-    ]
+    if "state_abv" not in wind_farms.columns:
+        raise ValueError("The wind_farms data frame must have a 'state_abv' column")
+    turbine_types = wind_farms.apply(
+        lambda x: "Offshore" if x["type"] == "wind_offshore" else x["state_abv"], axis=1
+    )
     wind_farm_ct = len(wind_farms)
 
     turbine_power_curves = get_turbine_power_curves()
