@@ -14,8 +14,8 @@ def immediate_charging(
     :param int veh_range: 100, 200, or 300, represents how far vehicle can travel on single charge.
     :param int kwhmi: fuel efficiency, should vary based on vehicle type and model_year.
     :param int power: charger power, EVSE kW.
-    :param int location_strategy: where the vehicle can charge-1, 2, 3, 4, or 5; 
-        1-home only, 2-home and work related, 3-anywhere if possibile, 
+    :param int location_strategy: where the vehicle can charge-1, 2, 3, 4, or 5;
+        1-home only, 2-home and work related, 3-anywhere if possibile,
         4-home and school only, 5-home and work and school.
     :param str veh_type: determine which category (LDV or LDT) to produce charging profiles for
     :return: (*numpy.ndarray*) -- charging profiles.
@@ -281,11 +281,11 @@ def immediate_charging(
 
 
 def adjust_BEV(TRANS_charge, adjustment_values):
-    """Adjusts the charging profiles by applying weighting factors based on 
+    """Adjusts the charging profiles by applying weighting factors based on
     seasonal/monthly values
 
     :param (*numpy.ndarray*) TRANS_charge: normalized charging profiles
-    :param (*pandas.DataFrame*) adjustment_values: weighting factors for each 
+    :param (*pandas.DataFrame*) adjustment_values: weighting factors for each
         day of the year loaded from month_info_nhts.mat.
     :return: (*numpy.ndarray*) -- the final adjusted charging profiles.
     """
