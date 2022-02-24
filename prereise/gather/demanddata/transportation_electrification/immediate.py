@@ -1,7 +1,8 @@
-from prereise.gather.demanddata.transportation_electrification import const
-from prereise.gather.demanddata.transportation_electrification import mileage
-from prereise.gather.demanddata.transportation_electrification import charging
 import numpy as np
+
+from prereise.gather.demanddata.transportation_electrification import const
+from prereise.gather.demanddata.transportation_electrification import charging
+from prereise.gather.demanddata.transportation_electrification import data_helper
 
 
 def immediate_charging(
