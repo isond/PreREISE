@@ -56,7 +56,7 @@ def decompose_demand_profile_by_state_to_loadzone(
 
     # Check the demand DataFrame timestamps and column headers
     if not df.index.equals(
-        pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left")
+        pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left")
     ):
         raise ValueError("This data does not have the proper timestamps.")
     if set(df.columns) != set(abv2state) - {"AK", "HI"}:
@@ -144,7 +144,7 @@ def shift_local_time_by_loadzone_to_utc(df):
 
     # Check the demand DataFrame dimensions and headers
     if not df.index.equals(
-        pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left")
+        pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left")
     ):
         raise ValueError("This data does not have the proper timestamps.")
     if set(df.columns) != set(id2abv):
@@ -157,7 +157,9 @@ def shift_local_time_by_loadzone_to_utc(df):
         df_tz[i] = df_tz[i].shift(tz_val)
 
         # Populate with data from December 30 (same day of week) that is the same time
-        df_tz[i][0:tz_val] = df.iloc[(8736 - tz_val) : 8736][i].values
+        df_tz.iloc[0:tz_val, df_tz.columns.get_loc(i)] = df.iloc[
+            (8736 - tz_val) : 8736
+        ][i].values
 
     # Rename index
     df_tz.index.name = "UTC Time"
