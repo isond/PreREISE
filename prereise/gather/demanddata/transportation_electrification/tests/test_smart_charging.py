@@ -11,8 +11,9 @@ from prereise.gather.demanddata.transportation_electrification.data_helper impor
 from prereise.gather.demanddata.transportation_electrification.immediate import (
     immediate_charging,
 )
-from prereise.gather.demanddata.transportation_electrification.smart_charging import (
+from prereise.gather.demanddata.transportation_electrification import (
     smart_charging,
+    smart_charging_HDV
 )
 
 
@@ -51,7 +52,7 @@ def run_smart_charging():
 
     daily_values = generate_daily_weighting(2017)
 
-    result = smart_charging(
+    result = smart_charging.smart_charging(
         census_region=1,
         model_year=2017,
         veh_range=100,
@@ -88,5 +89,52 @@ def run_smart_charging():
     np.testing.assert_allclose(result.cumsum()[::1095], correct_cumsum)
 
 
+def run_smart_charging_HDV():
+    data_dir = os.path.join(
+        os.path.dirname(inspect.getsourcefile(prereise)),
+        "gather",
+        "demanddata",
+        "transportation_electrification",
+        "CAISO_sample_load_2019.mat",
+    )
+    load_demand = loadmat(data_dir)["load_demand"].flatten()
+
+    result = smart_charging_HDV.smart_charging(
+        veh_range=200, 
+        kwhmi_f=[0.32, 0.85, 1.64], 
+        power=80, 
+        location_strategy=1, 
+        veh_type="HHDV", 
+        filepath=os.path.join(
+            os.path.dirname(inspect.getsourcefile(prereise)),
+            "gather",
+            "demanddata",
+            "transportation_electrification",
+            "fdata_v10st.data",
+        ),
+        initial_load=load_demand, 
+        hdv_year=6, 
+        hdv_penetration=[0.765, 0.696, 0.219], 
+        trip_strategy=1
+    )
+
+    correct_cumsum = np.array(
+        [
+            1380.30981545918, 
+            1391779.125,
+            2784496.914,
+            4154123.177,
+            5549224.696,
+            6926755.944,
+            8311924.875,
+            9702392.329, 
+        ]
+    )
+
+    np.testing.assert_allclose(result.cumsum()[::1095], correct_cumsum)
+
+
 if __name__ == "__main__":
-    run_smart_charging()
+    # run_smart_charging()
+
+    run_smart_charging_HDV()
