@@ -63,6 +63,37 @@ def load_data(census_region: int, filepath: str = "nhts_census_updated.mat"):
     return census_data
 
 
+def load_hdv_data(veh_type, filepath: str = "fdata_v10st.mat"):
+    """Load the data at fdata_v10st.mat.
+
+    :param str filepath: the path to the matfile.
+    :return: (*pandas.DataFrame*) -- the data loaded from fdata_v10st.mat, with column
+        names added.
+    """
+
+    hdv_data = loadmat(filepath)
+    raw_data = hdv_data[f"{veh_type}_data"]
+
+    return pd.DataFrame(raw_data, columns=const.hdv_data_column_names)
+
+
+def load_scaling_factor(hdv_year, hdv_cat, filepath = "hdv_daily.mat"):
+    """Load the scaling factor from data of daily VMT values based on
+    the input year and type of HDV vehicle.
+
+    :param int hdv_year: index of input year from this list,
+        [2005, 2012, 2030, 2035, 2040, 2050].
+    :param int hdv_cat: the HDV category, 1-Light-Heavy Duty, 2-Medium-Heavy Duty, 
+        3-Heavy-Heavy Duty
+    :param str filepath: the path to the matfile.
+    :return: (*int/float*) -- the daily VMT of the HDV vehicle.
+    """
+    hdv_daily_mat = loadmat(filepath)
+    hdv_daily_vmt = hdv_daily_mat["hdv_daily_vmt"]
+
+    return hdv_daily_vmt[hdv_year-1, hdv_cat-1]
+
+
 def remove_ldt(data: pd.DataFrame):
     """Remove light duty trucks (vehicle types 4-6) from data loaded from nths_census.mat.
     Keep light duty vehicles (vehicle types 1-3).
@@ -174,3 +205,24 @@ def get_total_daily_vmt(data: pd.DataFrame, input_day, daily_values):
     daily_vmt_total = daily_values * annual_vmt
 
     return daily_vmt_total
+
+
+def get_hdv_daily_vmt_total(
+    data: pd.DataFrame,
+    veh_range
+):
+    """Calculates the total VMT and total vehicles for for each day of the model year,
+    based on if the day is a weekend (1) or weekday (2).
+
+    :param pandas.DataFrame data: the data returned from :func:`load_data`.
+    :param int veh_range: 100, 200, or 300, represents how far vehicle can travel on single charge.
+    :return: (*np.array*) -- an array where each element is the daily VMT and total
+        vehicles for that day.
+    """
+    
+    range_vmt = data["Trip Distance"].copy()
+    range_vmt[data["Total Vehicle Miles"] > veh_range] = 0
+    daily_vmt_total = sum(range_vmt) * np.ones(365)
+
+    return daily_vmt_total
+    
