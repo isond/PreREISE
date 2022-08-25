@@ -89,6 +89,9 @@ def run_smart_charging():
     np.testing.assert_allclose(result.cumsum()[::1095], correct_cumsum)
 
 
+def test_smart_charging_HDV():
+    run_smart_charging_HDV()
+
 def run_smart_charging_HDV():
     data_dir = os.path.join(
         os.path.dirname(inspect.getsourcefile(prereise)),
@@ -120,14 +123,14 @@ def run_smart_charging_HDV():
 
     correct_cumsum = np.array(
         [
-            1380.30981545918, 
-            1391779.125,
-            2784496.914,
-            4154123.177,
-            5549224.696,
-            6926755.944,
-            8311924.875,
-            9702392.329, 
+            1380.30981545918,
+            1391857.506,
+            2784877.62,
+            4154503.883,
+            5549228.041,
+            6930893.731,
+            8311924.876,
+            9704099.913,
         ]
     )
 
