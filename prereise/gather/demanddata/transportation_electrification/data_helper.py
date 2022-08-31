@@ -43,6 +43,41 @@ def get_data_day(data: pd.DataFrame):
     return np.array(data["If Weekend"])
 
 
+def get_kwhmi(model_year, veh_type, veh_range):
+    """Get the fuel efficiency value based on the model year and vehicle type. 
+
+    :param int model_year: year that is being modelled/projected to, 2017, 2030, 2040, 2050.
+    :param str veh_type: determine which category (MDV, HDV, or Transit) to produce
+        a fuel efficiency value for.
+    :param int veh_range: 100, 200, or 300, represents how far vehicle can travel on single charge.
+    :return: (*float*) -- fuel efficiency value from the Fuel_efficiencies.csv
+    :raises ValueError: if ``veh_range`` is not 100, 200, or 300 and if ``veh_type``
+        is not 'LDT', 'LDV', 'MDV', 'HDV', or 'Transit
+    """
+    allowable_vehicle_types = {"LDT", "LDV", "MDV", "HDV", "Transit"}
+    allowable_ranges = {100, 200, 300}
+
+    if veh_range not in allowable_ranges:
+        raise ValueError(f"veh_range must be one of {allowable_ranges}")
+
+    filepath = "Fuel_Efficiencies.csv"
+    data = pd.read_csv(filepath, index_col="veh_type")
+
+    if (veh_type.upper() == "LDV") or (veh_type.upper() == "LDT"):
+        kwhmi = data.loc[f"{veh_type.upper()}_{veh_range}", model_year]
+    
+    elif (veh_type.upper() == "MDV") or (veh_type.upper() == "HDV"):
+        kwhmi = data.loc[f"{veh_type.upper()}", str(model_year)]
+
+    elif (veh_type == "Transit"):
+        kwhmi = data.loc[f"{veh_type}", str(model_year)]
+
+    else:
+        raise ValueError(f"veh_type must be one of {allowable_vehicle_types}")
+    
+    return kwhmi
+
+
 def load_data(census_region: int, filepath: str = "nhts_census_updated.mat"):
     """Load the data at nhts_census.mat.
 
