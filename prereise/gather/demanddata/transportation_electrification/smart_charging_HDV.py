@@ -196,15 +196,14 @@ def calculate_optimization(
 
 
 def smart_charging(
+    model_year,
     veh_range,
-    kwhmi_f,
     power,
     location_strategy,
     veh_type,
     filepath,
     initial_load,
-    hdv_year,
-    hdv_penetration,
+    bev_vmt,
     trip_strategy=1,
 ):
     """Smart charging function
