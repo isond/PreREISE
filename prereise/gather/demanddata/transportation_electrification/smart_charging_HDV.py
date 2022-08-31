@@ -255,17 +255,8 @@ def smart_charging(
 
     daily_vmt_total = data_helper.get_hdv_daily_vmt_total(newdata, veh_range)
 
-    kwhmi = kwhmi_f[hdv_cat - 1]
+    kwhmi = data_helper.get_kwhmi(model_year, veh_type, veh_range)
     kwh = kwhmi * veh_range
-
-    penetration = hdv_penetration[hdv_cat - 1]
-    # emfacvmt = scaling factor
-    # di: this emfacvmt part still needs to be updated once I clarify things with kate
-    # hdv_year value will also be updated
-    emfacvmt = (
-        data_helper.load_scaling_factor(hdv_year, hdv_cat, "hdv_daily.mat")
-        * penetration
-    )
 
     # charging_efficiency value used to be in const.py
     if power > 19.2:
@@ -428,7 +419,7 @@ def smart_charging(
 
                     # update the cost function and vonvert from KW to MW
                     cost += (
-                        tripload / 1000 / daily_vmt_total[day_iter] * emfacvmt
+                        tripload / 1000 / daily_vmt_total[day_iter] * bev_vmt
                     )[0, :]
 
                     # SOC rise in kwh, from charging
@@ -478,34 +469,34 @@ def smart_charging(
         if day_iter == model_year_len - 1:
             # MW
             model_year_profile[day_iter * 24 :] += (
-                outputelectricload[:24] / (daily_vmt_total[day_iter] * 1000) * emfacvmt
+                outputelectricload[:24] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
             model_year_profile[:24] += (
                 outputelectricload[24:48]
                 / (daily_vmt_total[day_iter] * 1000)
-                * emfacvmt
+                * bev_vmt
             )
             model_year_profile[24:48] += (
                 outputelectricload[48:72]
                 / (daily_vmt_total[day_iter] * 1000)
-                * emfacvmt
+                * bev_vmt
             )
 
         elif day_iter == model_year_len - 2:
             # MW
             model_year_profile[day_iter * 24 : day_iter * 24 + 48] += (
-                outputelectricload[:48] / (daily_vmt_total[day_iter] * 1000) * emfacvmt
+                outputelectricload[:48] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
             model_year_profile[:24] += (
                 outputelectricload[48:72]
                 / (daily_vmt_total[day_iter] * 1000)
-                * emfacvmt
+                * bev_vmt
             )
 
         else:
             # MW
             model_year_profile[day_iter * 24 : day_iter * 24 + 72] += (
-                outputelectricload / (daily_vmt_total[day_iter] * 1000) * emfacvmt
+                outputelectricload / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
 
     return model_year_profile
