@@ -2,13 +2,14 @@ from collections import defaultdict
 
 import pandas as pd
 from powersimdata.input.grid import Grid
-from powersimdata.network.usa_tamu.constants.zones import (
-    abv2id,
-    abv2state,
-    id2abv,
-    id2timezone,
-    interconnect2id,
-)
+from powersimdata.network.model import ModelImmutables
+
+mi = ModelImmutables("usa_tamu")
+abv2id = mi.zones["abv2id"]
+abv2state = mi.zones["abv2state"]
+id2abv = mi.zones["id2abv"]
+id2timezone = mi.zones["id2timezone"]
+interconnect2id = mi.zones["interconnect2id"]
 
 
 def decompose_demand_profile_by_state_to_loadzone(
@@ -157,7 +158,9 @@ def shift_local_time_by_loadzone_to_utc(df):
         df_tz[i] = df_tz[i].shift(tz_val)
 
         # Populate with data from December 30 (same day of week) that is the same time
-        df_tz[i][0:tz_val] = df.iloc[(8736 - tz_val) : 8736][i].values
+        df_tz.iloc[0:tz_val, df_tz.columns.get_loc(i)] = df.iloc[
+            (8736 - tz_val) : 8736
+        ][i].values
 
     # Rename index
     df_tz.index.name = "UTC Time"

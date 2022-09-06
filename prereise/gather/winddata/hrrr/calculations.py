@@ -3,7 +3,6 @@ import os
 
 import numpy as np
 import pandas as pd
-import pygrib
 from powersimdata.utility.distance import ll2uv
 from scipy.spatial import KDTree
 from tqdm import tqdm
@@ -32,6 +31,11 @@ def get_wind_data_lat_long(dt, directory):
     :return: (*tuple*) -- A tuple of 2 same lengthed numpy arrays, first one being
         latitude and second one being longitude.
     """
+    try:
+        import pygrib
+    except ImportError:
+        print("pygrib is missing but required for this function")
+        raise
     gribs = pygrib.open(os.path.join(directory, formatted_filename(dt)))
     grib = next(gribs)
     return grib.latlons()
@@ -42,8 +46,8 @@ def find_closest_wind_grids(wind_farms, wind_data_lat_long):
     the closest wind grid to each wind farm.
 
     :param pandas.DataFrame wind_farms: plant data frame.
-    :param tuple wind_data_lat_long: A tuple of 2 same lengthed numpy arrays, first one being
-        latitude and second one being longitude.
+    :param tuple wind_data_lat_long: A tuple of 2 same lengthed numpy arrays, first one
+        being latitude and second one being longitude.
     :return: (*numpy.array*) -- a numpy array that holds in each index i
         the index of the closest wind grid in wind_data_lat_long for wind_farms i
     """
@@ -75,12 +79,13 @@ def extract_wind_speed(wind_farms, start_dt, end_dt, directory):
     :param str end_dt: end date (inclusive).
     :param str directory: directory where hrrr data is contained.
     :return: (*pandas.Dataframe*) -- data frame containing wind speed per wind farm
-        on a per hourly basis between start_dt and end_dt inclusive. Structure of
-        dataframe is:
-            wind_farm1  wind_farm2
-        dt1   speed       speed
-        dt2   speed       speed
+        on a per hourly basis between ``start_dt`` and ``end_dt`` inclusive.
     """
+    try:
+        import pygrib
+    except ImportError:
+        print("pygrib is missing but required for this function")
+        raise
     wind_data_lat_long = get_wind_data_lat_long(start_dt, directory)
     wind_farm_to_closest_wind_grid_indices = find_closest_wind_grids(
         wind_farms, wind_data_lat_long
@@ -114,10 +119,9 @@ def extract_wind_speed(wind_farms, start_dt, end_dt, directory):
 
 
 def calculate_pout_blended(wind_farms, start_dt, end_dt, directory):
-    """Calculate power output for wind farms based on hrrr data. Each wind farm's power
-    curve is based on the average power curve for that state, based on EIA data on the
-    state's turbines.
-    Function assumes that user has already called
+    """Calculate power output for wind farms based on hrrr data. Each wind farm's
+    power curve is based on the average power curve for that state, based on EIA data
+    on the state's turbines. Function assumes that user has already called
     :meth:`prereise.gather.winddata.hrrr.hrrr.retrieve_data` with the same
     ``start_dt``, ``end_dt``, and ``directory``.
 
@@ -126,11 +130,7 @@ def calculate_pout_blended(wind_farms, start_dt, end_dt, directory):
     :param str end_dt: end date (inclusive).
     :param str directory: directory where hrrr data is contained.
     :return: (*pandas.Dataframe*) -- data frame containing power out per wind farm
-        on a per hourly basis between start_dt and end_dt inclusive. Structure of
-        dataframe is:
-            wind_farm1  wind_farm2
-        dt1    POUT        POUT
-        dt2    POUT        POUT
+        on a per hourly basis between ``start_dt`` and ``end_dt`` inclusive.
     :raises ValueError: if ``wind_farms`` is missing the 'state_abv' column.
     """
 
@@ -166,11 +166,10 @@ def calculate_pout_blended(wind_farms, start_dt, end_dt, directory):
 
 
 def calculate_pout_individual(wind_farms, start_dt, end_dt, directory):
-    """Calculate power output for wind farms based on hrrr data. Each wind farm's power
-    curve is based on farm-specific attributes.
-    Function assumes that user has already called
-    :meth:`prereise.gather.winddata.hrrr.hrrr.retrieve_data` with the same
-    ``start_dt``, ``end_dt``, and ``directory``.
+    """Calculate power output for wind farms based on hrrr data. Each wind farm's
+    power curve is based on farm-specific attributes. Function assumes that user has
+    already called :meth:`prereise.gather.winddata.hrrr.hrrr.retrieve_data` with the
+    same ``start_dt``, ``end_dt``, and ``directory``.
 
     :param pandas.DataFrame wind_farms: plant data frame, plus additional columns:
         'Predominant Turbine Manufacturer', 'Predominant Turbine Model Number', and
@@ -179,11 +178,7 @@ def calculate_pout_individual(wind_farms, start_dt, end_dt, directory):
     :param str end_dt: end date (inclusive).
     :param str directory: directory where hrrr data is contained.
     :return: (*pandas.Dataframe*) -- data frame containing power out per wind
-        farm on a per hourly basis between start_dt and end_dt inclusive. Structure of
-        dataframe is:
-            wind_farm1  wind_farm2
-        dt1    POUT        POUT
-        dt2    POUT        POUT
+        farm on a per hourly basis between start_dt and end_dt inclusive.
     :raises ValueError: if ``wind_farms`` is missing the 'state_abv' column.
     """
 
@@ -205,7 +200,7 @@ def calculate_pout_individual(wind_farms, start_dt, end_dt, directory):
         :param int/float hub_height: turbine hub height.
         :param dict/pandas.DataFrame reference_curves: turbine power curves.
         :return: (*pandas.Series*) -- index is wind speed at 80m, values are normalized
-        power output.
+            power output.
         """
         return shift_turbine_curve(
             reference_curves[lookup_name],
