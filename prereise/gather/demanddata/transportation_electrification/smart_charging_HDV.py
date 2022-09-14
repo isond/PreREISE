@@ -15,12 +15,7 @@ location_allowed = {
 
 
 def get_constraints(
-    constraints_df, 
-    kwhmi, 
-    power, 
-    trip_strategy, 
-    location_strategy,
-    charging_efficiency
+    constraints_df, kwhmi, power, trip_strategy, location_strategy, charging_efficiency
 ):
     """Determine the consumption and charging constraints for each trip (hour segment)
 
@@ -104,14 +99,7 @@ def get_constraints(
 
 
 def calculate_optimization(
-    charging_consumption, 
-    rates, 
-    elimit, 
-    seg, 
-    segsum, 
-    segcum, 
-    total_trips, 
-    kwh
+    charging_consumption, rates, elimit, seg, segsum, segcum, total_trips, kwh
 ):
     """Calculates the minimized charging cost during a specific dwelling activity
 
@@ -266,7 +254,9 @@ def smart_charging(
 
     nd_len = len(newdata)
 
-    newdata = get_constraints(newdata, kwhmi, power, trip_strategy, location_strategy, charging_efficiency)
+    newdata = get_constraints(
+        newdata, kwhmi, power, trip_strategy, location_strategy, charging_efficiency
+    )
 
     for day_iter in range(model_year_len):
 
@@ -360,9 +350,7 @@ def smart_charging(
             if exitflag == 0:
 
                 # can be an EV
-                individual.iloc[
-                    :, newdata.columns.get_loc("BEV could be used")
-                ] = 1
+                individual.iloc[:, newdata.columns.get_loc("BEV could be used")] = 1
 
                 for n in range(total_trips):
                     # SOC drop in kwh, from driving
@@ -376,23 +364,17 @@ def smart_charging(
                     start = math.floor(
                         individual.iloc[
                             n,
-                            individual.columns.get_loc(
-                                "Trip End"
-                            ),
+                            individual.columns.get_loc("Trip End"),
                         ]
                     )
                     end = math.floor(
                         individual.iloc[
                             n,
-                            individual.columns.get_loc(
-                                "Trip End"
-                            ),
+                            individual.columns.get_loc("Trip End"),
                         ]
                         + individual.iloc[
                             n,
-                            individual.columns.get_loc(
-                                "Dwell Time"
-                            ),
+                            individual.columns.get_loc("Dwell Time"),
                         ]
                     )
 
@@ -401,8 +383,7 @@ def smart_charging(
                     )
 
                     trip_g2v_load[:, start : end + 1] = (
-                        x[segcum[n] - seg[n] : segcum[n]]
-                        / charging_efficiency
+                        x[segcum[n] - seg[n] : segcum[n]] / charging_efficiency
                     )
                     g2v_load[why_to, :] += trip_g2v_load[0, :]
                     individual_g2v_load[i + n][:] = trip_g2v_load
@@ -418,9 +399,9 @@ def smart_charging(
                     tripload = trip_v2g_load + trip_g2v_load
 
                     # update the cost function and vonvert from KW to MW
-                    cost += (
-                        tripload / 1000 / daily_vmt_total[day_iter] * bev_vmt
-                    )[0, :]
+                    cost += (tripload / 1000 / daily_vmt_total[day_iter] * bev_vmt)[
+                        0, :
+                    ]
 
                     # SOC rise in kwh, from charging
                     individual.iloc[
@@ -449,9 +430,7 @@ def smart_charging(
                     ] = state_of_charge[n, 1]
 
                 # find the acutal battery size, in DC
-                batterysize = max(state_of_charge[:, 1]) - min(
-                    state_of_charge[:, 0]
-                )
+                batterysize = max(state_of_charge[:, 1]) - min(state_of_charge[:, 0])
 
                 # copy to individual
                 individual.iloc[
@@ -472,14 +451,10 @@ def smart_charging(
                 outputelectricload[:24] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
             model_year_profile[:24] += (
-                outputelectricload[24:48]
-                / (daily_vmt_total[day_iter] * 1000)
-                * bev_vmt
+                outputelectricload[24:48] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
             model_year_profile[24:48] += (
-                outputelectricload[48:72]
-                / (daily_vmt_total[day_iter] * 1000)
-                * bev_vmt
+                outputelectricload[48:72] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
 
         elif day_iter == model_year_len - 2:
@@ -488,9 +463,7 @@ def smart_charging(
                 outputelectricload[:48] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
             model_year_profile[:24] += (
-                outputelectricload[48:72]
-                / (daily_vmt_total[day_iter] * 1000)
-                * bev_vmt
+                outputelectricload[48:72] / (daily_vmt_total[day_iter] * 1000) * bev_vmt
             )
 
         else:

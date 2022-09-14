@@ -44,7 +44,7 @@ hdv_data_column_names = [
     "Trip Time",
     "Speed",
     "Total Vehicle Trips",
-    "Total Vehicle Miles"
+    "Total Vehicle Miles",
 ]
 
 # from grid to battery efficiency
