@@ -1,11 +1,15 @@
 import pandas as pd
 from pandas.testing import assert_series_equal
-from powersimdata.network.usa_tamu.constants.zones import abv2state, id2abv
+from powersimdata.network.model import ModelImmutables
 
 from prereise.gather.demanddata.nrel_efs.map_states import (
     decompose_demand_profile_by_state_to_loadzone,
     shift_local_time_by_loadzone_to_utc,
 )
+
+mi = ModelImmutables("usa_tamu")
+abv2state = mi.zones["abv2state"]
+id2abv = mi.zones["id2abv"]
 
 
 def test_decompose_demand_profile_by_state_to_loadzone():
@@ -13,7 +17,7 @@ def test_decompose_demand_profile_by_state_to_loadzone():
     cont_states = sorted(set(abv2state) - {"AK", "HI"})
     agg_dem = pd.DataFrame(
         1,
-        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left"),
+        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left"),
         columns=cont_states,
     )
     agg_dem.index.name = "Local Time"
@@ -26,7 +30,7 @@ def test_decompose_demand_profile_by_state_to_loadzone():
     # Create the expected result for demand percentage in load zone 7 (NY)
     exp_agg_dem = pd.Series(
         0.67803,
-        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left"),
+        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left"),
         name=7,
     )
     exp_agg_dem.index.name = "UTC Time"
@@ -39,7 +43,7 @@ def test_shift_local_time_by_loadzone_to_utc():
     # Create dummy DataFrame
     agg_dem = pd.DataFrame(
         1,
-        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left"),
+        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left"),
         columns=set(id2abv),
     )
     agg_dem.index.name = "Local Time"
@@ -51,7 +55,7 @@ def test_shift_local_time_by_loadzone_to_utc():
     # Create the expected result for UTC-shifted demand in load zone 1 (ME)
     exp_agg_dem = pd.Series(
         1.0,
-        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left"),
+        index=pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left"),
         name=1,
     )
     exp_agg_dem.index.name = "UTC Time"

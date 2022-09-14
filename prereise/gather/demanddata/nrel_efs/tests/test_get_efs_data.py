@@ -4,7 +4,7 @@ import zipfile
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
-from powersimdata.network.usa_tamu.constants.zones import abv2state
+from powersimdata.network.model import ModelImmutables
 
 from prereise.gather.demanddata.nrel_efs.get_efs_data import (
     _check_electrification_scenarios_for_download,
@@ -16,6 +16,9 @@ from prereise.gather.demanddata.nrel_efs.get_efs_data import (
     partition_demand_by_sector,
     partition_flexibility_by_sector,
 )
+
+mi = ModelImmutables("usa_tamu")
+abv2state = mi.zones["abv2state"]
 
 
 def test_check_electrification_scenarios_for_download():
@@ -158,7 +161,7 @@ def test_partition_demand_by_sector():
         # Create the expected results
         exp_res_dem = pd.DataFrame(
             3,
-            index=pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left"),
+            index=pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left"),
             columns=cont_states,
         )
         exp_res_dem.index.name = "Local Time"
@@ -198,7 +201,7 @@ def test_partition_flexibility_by_sector():
         # Create the expected results
         exp_res_flex = pd.DataFrame(
             3,
-            index=pd.date_range("2016-01-01", "2017-01-01", freq="H", closed="left"),
+            index=pd.date_range("2016-01-01", "2017-01-01", freq="H", inclusive="left"),
             columns=cont_states,
         )
         exp_res_flex.index.name = "Local Time"
